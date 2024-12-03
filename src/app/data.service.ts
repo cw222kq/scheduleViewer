@@ -7,6 +7,31 @@ export interface Schedule {
   displayName: string;
 }
 
+export interface ScheduleDetail {
+  id: string;
+  displayName: string;
+  start: string;
+  end: string;
+  teachers: Teacher[];
+  groups: Group[];
+  locations: Location[];  
+}
+
+export interface Teacher {
+  id: string;
+  displayName: string;
+}
+
+export interface Group {
+  id: string;
+  displayName: string;  
+}
+
+export interface Location {
+  id: string;
+  displayName: string;    
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -21,6 +46,10 @@ export class DataService {
 
   getSchedules(): Observable<Schedule[]> {
     return this.getData<Schedule[]>(this.baseUrl);
+  }
+
+  getScheduleDetails(scheduleId: string): Observable<ScheduleDetail> {
+    return this.getData<ScheduleDetail>(`${this.baseUrl}/${scheduleId}`);
   }
 
 }
