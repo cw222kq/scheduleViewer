@@ -1,4 +1,5 @@
 <mat-toolbar>
+  <!-- Schema -->
   <mat-form-field>
     <mat-label>Schema</mat-label>
     <mat-select [(value)]="selectedSchedule" (selectionChange)="onScheduleChange($event.value)">
@@ -9,6 +10,38 @@
     </mat-select>
   </mat-form-field>
 
+  <!-- Teacher -->
+   <mat-form-field>
+    <mat-label>Lärare</mat-label>
+    <mat-select>
+      @for (teacher of teachers(); track $index) {
+      <mat-option [value]="teacher.id">{{ teacher.displayName }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Group -->
+  <mat-form-field>
+    <mat-label>Grupper</mat-label>
+    <mat-select>
+      @for (group of groups(); track $index) {
+      <mat-option [value]="group.id">{{ group.displayName }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+   <!-- Location -->
+   <mat-form-field>
+    <mat-label>Sal</mat-label>
+    <mat-select>
+      @for (location of locations(); track $index) {
+      <mat-option [value]="location.id">{{ location.displayName }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+
+  <!-- Week -->
   <mat-form-field>
     <mat-label>Vecka</mat-label>
     <!-- [(...)] is a two-way binding syntax in Angular whereas [...] is a one-way binding and (...) is an event binding -->

@@ -6,7 +6,7 @@ import {
   CalendarEvent,
 } from './calendar/calendar.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { DataService, Schedule } from './data.service';
+import { DataService, Schedule, Teacher, Group, Location } from './data.service';
 
 const dummyWeeks: string[] = [
   '2024-11-18',
@@ -63,6 +63,9 @@ export class AppComponent implements OnInit {
   protected readonly weeks = signal<string[]>(dummyWeeks);
   protected readonly events = signal<CalendarEvent[]>(dummyEvents);
   protected readonly schedules = signal<Schedule[]>([]);
+  protected readonly teachers = signal<Teacher[]>([]);
+  protected readonly groups = signal<Group[]>([]);
+  protected readonly locations = signal<Location[]>([]);
 
   // the selected week
   protected readonly selectedWeek = signal<string | null>(null);
@@ -90,6 +93,9 @@ export class AppComponent implements OnInit {
     this.dataService.getScheduleDetails(scheduleId).subscribe({
       next: (data) => {
         console.log('Fetched schedules:', data);
+        this.teachers.set(data.teachers);
+        this.groups.set(data.groups);
+        this.locations.set(data.locations);
       },
       error: (err) => {
         console.error('Error fetching schedules:', err);
