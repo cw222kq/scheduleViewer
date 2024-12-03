@@ -1,15 +1,23 @@
 <mat-toolbar>
+  <mat-form-field>
+    <mat-label>Schema</mat-label>
+    <mat-select [(value)]="selectedSchedule" (selectionChange)="onScheduleChange($event.value)">
+      @for (schedule of schedules(); track $index) {
+      <mat-option [value]="schedule.id">{{ schedule.displayName }}</mat-option>
+
+      }
+    </mat-select>
+  </mat-form-field>
 
   <mat-form-field>
     <mat-label>Vecka</mat-label>
     <!-- [(...)] is a two-way binding syntax in Angular whereas [...] is a one-way binding and (...) is an event binding -->
     <mat-select [(value)]="selectedWeek">
       @for (week of weeks(); track $index) {
-        <mat-option [value]="week">{{ week }}</mat-option>
+      <mat-option [value]="week">{{ week }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
-
 </mat-toolbar>
 
 <!-- instantiates an instance of our calendar component and passes some input data -->
