@@ -70,7 +70,7 @@ export class DataService {
     return this.getData<ScheduleDetail>(`${this.baseUrl}/${scheduleId}`);
   }
 
-  getCalenderEvents(
+  getCalendarEvents(
     scheduleId: string,
     filterType: 'teacher' | 'group' | 'location',
     filterId: string
