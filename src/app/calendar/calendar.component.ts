@@ -2,6 +2,7 @@ import { Component, effect, input, viewChild } from '@angular/core';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/core';
 import timeGridPlugin from '@fullcalendar/timegrid'
+import enGbLocale from '@fullcalendar/core/locales/en-gb'; 
 
 export type CalendarEvent = {
   title:  string;
@@ -31,6 +32,7 @@ export class CalendarComponent {
     // the calendar view to be used
     plugins: [ timeGridPlugin ],
     initialView: 'timeGridWeek',
+    locale: enGbLocale,
 
     // some customizations
     headerToolbar: false,

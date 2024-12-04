@@ -16,12 +16,6 @@ import {
 } from './data.service';
 
 
-const dummyWeeks: string[] = [
-  '2024-11-18',
-  '2024-11-25',
-  '2024-12-02', // Add each monday of the week
-]; // TODO: Modify the dates in the browser to be in the correct format
-
 @Component({
   selector: 'app-root',
   imports: [
@@ -35,7 +29,7 @@ const dummyWeeks: string[] = [
 })
 export class AppComponent implements OnInit {
   // some dummy calendar data
-  protected readonly weeks = signal<string[]>(dummyWeeks);
+  protected readonly weeks = signal<string[]>(this.generateMondays(8));
   protected readonly events = signal<CalendarEvent[]>([]);
   protected readonly schedules = signal<Schedule[]>([]);
   protected readonly teachers = signal<Teacher[]>([]);
@@ -56,6 +50,27 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchSchedules();
+  }
+
+  private generateMondays(numWeeks: number): string[] {
+    const mondays: string[] = [];
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const distanceToMonday = (dayOfWeek + 6) % 7;
+    const currentMonday = new Date(today);
+    currentMonday.setDate(today.getDate() - distanceToMonday);
+    currentMonday.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < numWeeks; i++) {
+      const monday = new Date(currentMonday);
+      monday.setDate(currentMonday.getDate() + i * 7);
+      const yyyy = monday.getFullYear();
+      const mm = String(monday.getMonth() + 1).padStart(2, '0');
+      const dd = String(monday.getDate()).padStart(2, '0');
+      mondays.push(`${yyyy}-${mm}-${dd}`);
+    }
+    console.log ('Mondays:', mondays);
+    return mondays
   }
 
   private setupEffect(): void {
