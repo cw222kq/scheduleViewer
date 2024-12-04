@@ -1,0 +1,6 @@
+// Flex layout for the toolbar
+.toolbar {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+}

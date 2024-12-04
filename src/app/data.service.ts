@@ -78,6 +78,7 @@ export class DataService {
     const url = `${this.baseUrl}/${scheduleId}/calendar_events`;
     let params = new HttpParams();
 
+    // Set params based on filterType and filterId
     if (filterType && filterId) {
       if (filterType === 'teacher') {
         params = params.set('teachers', filterId);

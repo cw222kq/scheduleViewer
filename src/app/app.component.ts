@@ -1,6 +1,7 @@
 import { Component, signal, OnInit, effect } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import {
   CalendarComponent,
   CalendarEvent,
@@ -21,12 +22,16 @@ import {
     MatToolbarModule,
     MatFormFieldModule,
     MatSelectModule,
+    MatSnackBarModule,
     CalendarComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
+
+  // Signals
+  
   protected readonly weeks = signal<string[]>(this.generateMondays(8));
   protected readonly events = signal<CalendarEvent[]>([]);
   protected readonly schedules = signal<Schedule[]>([]);
@@ -34,7 +39,6 @@ export class AppComponent implements OnInit {
   protected readonly groups = signal<Group[]>([]);
   protected readonly locations = signal<Location[]>([]);
 
-  // the selected week
   protected readonly selectedWeek = signal<string | null>(null);
   protected readonly selectedSchedule = signal<string | null>(null);
   protected readonly selectedFilterType = signal<
@@ -45,13 +49,14 @@ export class AppComponent implements OnInit {
   protected readonly selectedGroupId = signal<string | null>(null);
   protected readonly selectedLocationId = signal<string | null>(null);
 
-  constructor(private dataService: DataService) {
+  constructor(private dataService: DataService, private snackBar: MatSnackBar) {
     effect(() => {
       const scheduleId = this.selectedSchedule();
       const filterType = this.selectedFilterType();
 
       let filterId: string | null = null;
 
+      // Determine which filterId to use based on filterType
       switch (filterType) {
         case 'teacher':
           filterId = this.selectedTeacherId();
@@ -67,12 +72,7 @@ export class AppComponent implements OnInit {
           break;
       }
 
-      console.log('Effect triggered with values:', {
-        scheduleId,
-        filterType,
-        filterId,
-      });
-
+      // Fetch events if all required data is available
       if (scheduleId && filterType && filterId) {
         this.fetchCalendarEvents(scheduleId, filterType, filterId);
       }
@@ -92,48 +92,59 @@ export class AppComponent implements OnInit {
     const dayOfWeek = today.getDay();
     const distanceToMonday = (dayOfWeek + 6) % 7;
     const currentMonday = new Date(today);
+    
+    // Set currentMonday to the Monday of the current week
     currentMonday.setDate(today.getDate() - distanceToMonday);
     currentMonday.setHours(0, 0, 0, 0);
 
+    // Generate Mondays for the next numWeeks
     for (let i = 0; i < numWeeks; i++) {
+      
+      // Calculate the date of the next Monday
       const monday = new Date(currentMonday);
       monday.setDate(currentMonday.getDate() + i * 7);
-      const yyyy = monday.getFullYear();
-      const mm = String(monday.getMonth() + 1).padStart(2, '0');
-      const dd = String(monday.getDate()).padStart(2, '0');
-      mondays.push(`${yyyy}-${mm}-${dd}`);
+      
+      const year = monday.getFullYear();
+
+      // Add leading zero to month and day if needed
+      const month = String(monday.getMonth() + 1).padStart(2, '0');
+      const day = String(monday.getDate()).padStart(2, '0');
+      
+      mondays.push(`${year}-${month}-${day}`);
     }
-    console.log('Mondays:', mondays);
     return mondays;
   }
 
+  // Fetch schedules from the API
   private fetchSchedules(): void {
     this.dataService.getSchedules().subscribe({
       next: (data) => {
-        console.log('Fetched schedules:', data);
         this.schedules.set(data);
       },
       error: (err) => {
         console.error('Error fetching schedules:', err);
+        this.snackBar.open('Error fetching schedules, please try again' + err.message, 'Close', { duration: 5000});
       },
     });
   }
 
+  // Fetch schedule details from the API
   private fetchScheduleDetails(scheduleId: string): void {
     this.dataService.getScheduleDetails(scheduleId).subscribe({
       next: (data) => {
-        console.log('Fetched schedules:', data);
         this.teachers.set(data.teachers);
         this.groups.set(data.groups);
         this.locations.set(data.locations);
       },
       error: (err) => {
-        console.error('Error fetching schedules:', err);
+        console.error('Error fetching schedules details:', err);
+        this.snackBar.open('Error fetching schedules details, please try again' + err.message, 'Close', { duration: 5000 });
       },
     });
   }
 
-  fetchCalendarEvents(
+  // Fetch calendar events from the API
+  private fetchCalendarEvents(
     scheduleId: string,
     filterType: 'teacher' | 'group' | 'location',
     filterId: string
@@ -142,7 +153,6 @@ export class AppComponent implements OnInit {
       .getCalendarEvents(scheduleId, filterType, filterId)
       .subscribe({
         next: (data: ApiCalendarEvent[]) => {
-          console.log('Fetched calenderEvents:', data);
           const mappedEvents: CalendarEvent[] = data.map((event) => ({
             title: event.course?.displayName || event.type?.toString() || '',
             start: event.start,
@@ -152,13 +162,15 @@ export class AppComponent implements OnInit {
           this.events.set(mappedEvents);
         },
         error: (err) => {
-          console.error('Error fetching calenderEvents:', err);
+          console.error('Error fetching calendarEvents:', err);
+          this.snackBar.open('Error fetching schedule events, please try again' + err.message, 'Close', { duration: 5000 });
         },
       });
   }
 
+  // Event handlers
+  
   onScheduleChange(scheduleId: string): void {
-    console.log('Selected schedule ID:', scheduleId);
     this.selectedSchedule.set(scheduleId);
     this.fetchScheduleDetails(scheduleId);
 
@@ -171,7 +183,6 @@ export class AppComponent implements OnInit {
   onFilterTypeChange(
     filterType: 'teacher' | 'group' | 'location' | null
   ): void {
-    console.log('Selected filter type:', filterType);
     this.selectedFilterType.set(filterType);
 
     if (filterType !== 'teacher') { 
@@ -186,17 +197,14 @@ export class AppComponent implements OnInit {
   }
 
    onTeacherFilterIdChange(filterId: string | null): void {
-    console.log('Selected teacher ID:', filterId);
     this.selectedTeacherId.set(filterId);
   }
 
   onGroupFilterIdChange(filterId: string | null): void {
-    console.log('Selected group ID:', filterId);
     this.selectedGroupId.set(filterId);
   }
 
   onLocationFilterIdChange(filterId: string | null): void {
-    console.log('Selected location ID:', filterId);
     this.selectedLocationId.set(filterId);
   }
 
