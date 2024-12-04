@@ -12,47 +12,15 @@ import {
   Teacher,
   Group,
   Location,
-  CalendarEvent as ApiCalendarEvent,
+  ApiCalendarEvent,
 } from './data.service';
+
 
 const dummyWeeks: string[] = [
   '2024-11-18',
   '2024-11-25',
   '2024-12-02', // Add each monday of the week
 ]; // TODO: Modify the dates in the browser to be in the correct format
-
-const dummyEvents: CalendarEvent[] = [
-  {
-    title: 'Event 1',
-    start: '2024-11-18T09:00:00',
-    end: '2024-11-18T10:00:00',
-    color: 'red',
-  },
-  {
-    title: 'Event 2',
-    start: '2024-11-21T14:00:00',
-    end: '2024-11-21T14:15:00',
-    color: 'blue',
-  },
-  {
-    title: 'Event 3',
-    start: '2024-11-26T10:00:00',
-    end: '2024-11-26T11:00:00',
-    color: 'green',
-  },
-  {
-    title: 'Event 4',
-    start: '2024-11-28T16:00:00',
-    end: '2024-11-28T17:30:00',
-    color: 'yellow',
-  },
-  {
-    title: 'Event 5',
-    start: '2024-12-03T12:00:00',
-    end: '2024-12-03T15:00:00',
-    color: 'purple',
-  },
-];
 
 @Component({
   selector: 'app-root',
@@ -68,7 +36,7 @@ const dummyEvents: CalendarEvent[] = [
 export class AppComponent implements OnInit {
   // some dummy calendar data
   protected readonly weeks = signal<string[]>(dummyWeeks);
-  protected readonly events = signal<CalendarEvent[]>(dummyEvents);
+  protected readonly events = signal<CalendarEvent[]>([]);
   protected readonly schedules = signal<Schedule[]>([]);
   protected readonly teachers = signal<Teacher[]>([]);
   protected readonly groups = signal<Group[]>([]);
@@ -81,8 +49,6 @@ export class AppComponent implements OnInit {
     'teacher' | 'group' | 'location' | null
   >(null);
   protected readonly selectedFilterId = signal<string | null>(null);
-
-  protected readonly apiEvents = signal<ApiCalendarEvent[]>([]);
 
   constructor(private dataService: DataService) {
     this.setupEffect();
@@ -104,23 +70,12 @@ export class AppComponent implements OnInit {
         filterId,
       });
 
-      if (scheduleId && filterType === 'teacher' && filterId) {
+      if (scheduleId && filterType && filterId) {
         this.fetchCalendarEvents(scheduleId, filterType, filterId);
         this.selectedFilterType.set(null);
         this.selectedFilterId.set(null);
       }
 
-      if (scheduleId && filterType === 'group' && filterId) {
-        this.fetchCalendarEvents(scheduleId, filterType, filterId);
-        this.selectedFilterType.set(null);
-        this.selectedFilterId.set(null);
-      }
-
-      if (scheduleId && filterType === 'location' && filterId) {
-        this.fetchCalendarEvents(scheduleId, filterType, filterId);
-        this.selectedFilterType.set(null);
-        this.selectedFilterId.set(null);
-      }
     });
   }
 
@@ -158,8 +113,15 @@ export class AppComponent implements OnInit {
     this.dataService
       .getCalenderEvents(scheduleId, filterType, filterId)
       .subscribe({
-        next: (data) => {
+        next: (data: ApiCalendarEvent[]) => {
           console.log('Fetched calenderEvents:', data);
+          const mappedEvents: CalendarEvent[] = data.map((event) => ({
+            title: event.course?.displayName || event.type?.toString() || '',
+            start: event.start,
+            end: event.end,
+            color: event.color,
+          }));
+          this.events.set(mappedEvents);
         },
         error: (err) => {
           console.error('Error fetching calenderEvents:', err);

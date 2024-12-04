@@ -32,7 +32,7 @@ export interface Location {
   displayName: string;
 }
 
-export interface CalendarEvent {
+export interface ApiCalendarEvent {
   id: string;
   type?: 'LUNCH';
   course?: {
@@ -74,7 +74,7 @@ export class DataService {
     scheduleId: string,
     filterType: 'teacher' | 'group' | 'location',
     filterId: string
-  ): Observable<CalendarEvent[]> {
+  ): Observable<ApiCalendarEvent[]> {
     const url = `${this.baseUrl}/${scheduleId}/calendar_events`;
     let params = new HttpParams();
 
@@ -87,6 +87,6 @@ export class DataService {
         params = params.set('inLocations', filterId);
       }
     }
-    return this.getData<CalendarEvent[]>(url, params);
+    return this.getData<ApiCalendarEvent[]>(url, params);
   }
 }
