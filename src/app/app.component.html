@@ -2,7 +2,10 @@
   <!-- Schema -->
   <mat-form-field>
     <mat-label>Schema</mat-label>
-    <mat-select [(value)]="selectedSchedule" (selectionChange)="onScheduleChange($event.value)">
+    <mat-select
+      [(value)]="selectedSchedule"
+      (selectionChange)="onScheduleChange($event.value)"
+    >
       @for (schedule of schedules(); track $index) {
       <mat-option [value]="schedule.id">{{ schedule.displayName }}</mat-option>
 
@@ -10,10 +13,20 @@
     </mat-select>
   </mat-form-field>
 
+  <!-- Filter -->
+  <mat-form-field>
+    <mat-label>Filter</mat-label>
+    <mat-select [(value)]="selectedFilterType" (selectionChange)="onFilterTypeChange($event.value)">
+      <mat-option value="teacher">Lärare</mat-option>
+      <mat-option value="group">Grupp</mat-option>
+      <mat-option value="location">Sal</mat-option>  
+    </mat-select>
+  </mat-form-field>
+
   <!-- Teacher -->
-   <mat-form-field>
+  <mat-form-field>
     <mat-label>Lärare</mat-label>
-    <mat-select>
+    <mat-select [(value)]="selectedFilterId" (selectionChange)="onFilterIdChange($event.value)">
       @for (teacher of teachers(); track $index) {
       <mat-option [value]="teacher.id">{{ teacher.displayName }}</mat-option>
       }
@@ -23,23 +36,22 @@
   <!-- Group -->
   <mat-form-field>
     <mat-label>Grupper</mat-label>
-    <mat-select>
+    <mat-select [(value)]="selectedFilterId" (selectionChange)="onFilterIdChange($event.value)">
       @for (group of groups(); track $index) {
       <mat-option [value]="group.id">{{ group.displayName }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
 
-   <!-- Location -->
-   <mat-form-field>
+  <!-- Location -->
+  <mat-form-field>
     <mat-label>Sal</mat-label>
-    <mat-select>
+    <mat-select [(value)]="selectedFilterId" (selectionChange)="onFilterIdChange($event.value)">
       @for (location of locations(); track $index) {
       <mat-option [value]="location.id">{{ location.displayName }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
-
 
   <!-- Week -->
   <mat-form-field>

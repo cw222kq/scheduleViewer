@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, effect } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSelectModule } from '@angular/material/select';
 import {
@@ -6,7 +6,14 @@ import {
   CalendarEvent,
 } from './calendar/calendar.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { DataService, Schedule, Teacher, Group, Location } from './data.service';
+import {
+  DataService,
+  Schedule,
+  Teacher,
+  Group,
+  Location,
+  CalendarEvent as ApiCalendarEvent,
+} from './data.service';
 
 const dummyWeeks: string[] = [
   '2024-11-18',
@@ -70,11 +77,51 @@ export class AppComponent implements OnInit {
   // the selected week
   protected readonly selectedWeek = signal<string | null>(null);
   protected readonly selectedSchedule = signal<string | null>(null);
+  protected readonly selectedFilterType = signal<
+    'teacher' | 'group' | 'location' | null
+  >(null);
+  protected readonly selectedFilterId = signal<string | null>(null);
 
-  constructor(private dataService: DataService) {}
+  protected readonly apiEvents = signal<ApiCalendarEvent[]>([]);
+
+  constructor(private dataService: DataService) {
+    this.setupEffect();
+  }
 
   ngOnInit(): void {
     this.fetchSchedules();
+  }
+
+  private setupEffect(): void {
+    effect(() => {
+      const scheduleId = this.selectedSchedule();
+      const filterType = this.selectedFilterType();
+      const filterId = this.selectedFilterId();
+
+      console.log('Effect triggered with values:', {
+        scheduleId,
+        filterType,
+        filterId,
+      });
+
+      if (scheduleId && filterType === 'teacher' && filterId) {
+        this.fetchCalendarEvents(scheduleId, filterType, filterId);
+        this.selectedFilterType.set(null);
+        this.selectedFilterId.set(null);
+      }
+
+      if (scheduleId && filterType === 'group' && filterId) {
+        this.fetchCalendarEvents(scheduleId, filterType, filterId);
+        this.selectedFilterType.set(null);
+        this.selectedFilterId.set(null);
+      }
+
+      if (scheduleId && filterType === 'location' && filterId) {
+        this.fetchCalendarEvents(scheduleId, filterType, filterId);
+        this.selectedFilterType.set(null);
+        this.selectedFilterId.set(null);
+      }
+    });
   }
 
   private fetchSchedules(): void {
@@ -103,9 +150,38 @@ export class AppComponent implements OnInit {
     });
   }
 
+  fetchCalendarEvents(
+    scheduleId: string,
+    filterType: 'teacher' | 'group' | 'location',
+    filterId: string
+  ): void {
+    this.dataService
+      .getCalenderEvents(scheduleId, filterType, filterId)
+      .subscribe({
+        next: (data) => {
+          console.log('Fetched calenderEvents:', data);
+        },
+        error: (err) => {
+          console.error('Error fetching calenderEvents:', err);
+        },
+      });
+  }
+
   onScheduleChange(scheduleId: string): void {
     console.log('Selected schedule ID:', scheduleId);
     this.selectedSchedule.set(scheduleId);
     this.fetchScheduleDetails(scheduleId);
+  }
+
+  onFilterTypeChange(
+    filterType: 'teacher' | 'group' | 'location' | null
+  ): void {
+    console.log('Selected filter type:', filterType);
+    this.selectedFilterType.set(filterType);
+  }
+
+  onFilterIdChange(filterId: string | null): void {
+    console.log('Selected filter ID:', filterId);
+    this.selectedFilterId.set(filterId);
   }
 }
